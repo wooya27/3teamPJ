@@ -71,10 +71,28 @@ def test_security_maps_bandit_output_and_summary():
             return _fake_proc(bandit_json)
         return _fake_proc("")  # semgrep 등 → 빈 출력
 
-    with patch.object(analyzer.subprocess, "run", side_effect=fake_run), patch.object(
-        analyzer, "_resolve_semgrep", return_value=["semgrep"]
+    with (
+        patch.object(
+            analyzer.subprocess,
+            "run",
+            side_effect=fake_run
+        ),
+        patch.object(
+            analyzer,
+            "_resolve_tool",
+            side_effect=lambda name: [name]
+        ),
+        patch.object(
+            analyzer,
+            "_resolve_semgrep",
+            return_value=["semgrep"]
+        ),
     ):
-        issues, summary, _ = analyze(PY_DIFF, "security_scan")
+        issues, summary, _ = analyze(
+            PY_DIFF,
+            "security_scan"
+        )
+       
 
     assert len(issues) == 1
     issue = issues[0]
@@ -103,8 +121,22 @@ def test_static_maps_pylint_output():
             return _fake_proc(pylint_json)
         return _fake_proc("")  # radon → 빈 출력
 
-    with patch.object(analyzer.subprocess, "run", side_effect=fake_run):
-        issues, summary, _ = analyze(PY_DIFF, "static_analysis")
+    with (
+        patch.object(
+            analyzer.subprocess,
+            "run",
+            side_effect=fake_run
+        ),
+        patch.object(
+            analyzer,
+            "_resolve_tool",
+            side_effect=lambda name: [name]
+        ),
+    ):
+        issues, summary, _ = analyze(
+            PY_DIFF,
+            "static_analysis"
+        )
 
     assert any(i.rule_id == "SA-E0602" and i.severity == "Critical" for i in issues)
     assert summary.critical == 1
@@ -184,3 +216,220 @@ def test_semgrep_suggestion_maps_to_korean():
     # 미매칭 → 한글 폴백
     fb = analyzer._semgrep_suggestion("some.unknown.rule", "Generic finding")
     assert fb.endswith("수정하세요.")
+
+
+def test_path_traversal_detects_candidate(tmp_path):
+    file = tmp_path / "user.py"
+
+    file.write_text(
+        "file_path = BASE_DIR / filename",
+        encoding="utf-8"
+    )
+
+    issues = analyzer._scan_path_traversal(
+        ["user.py"],
+        str(tmp_path)
+    )
+
+    assert len(issues) == 1
+    assert issues[0].rule_id == "SEC-PT001"
+    assert issues[0].line == 1
+
+
+
+
+
+def test_path_traversal_safe_code(tmp_path):
+    file = tmp_path / "safe.py"
+
+    file.write_text(
+        'print("hello")',
+        encoding="utf-8"
+    )
+
+    issues = analyzer._scan_path_traversal(
+        ["safe.py"],
+        str(tmp_path)
+    )
+
+    assert len(issues) == 0
+
+def test_path_traversal_integrated():
+    diff = """diff --git a/src/download.py b/src/download.py
+--- /dev/null
++++ b/src/download.py
+@@ -0,0 +1 @@
++file_path = BASE_DIR / filename
+"""
+
+    with (
+        patch.object(analyzer, "_run_bandit", return_value=[]),
+        patch.object(analyzer, "_run_semgrep", return_value=[]),
+    ):
+        issues, summary, _ = analyze(
+            diff,
+            "security_scan"
+        )
+
+    assert len(issues) == 1
+    assert issues[0].rule_id == "SEC-PT001"
+    assert issues[0].file == "src/download.py"
+    assert summary.major == 1
+
+def test_missing_auth_detects_unguarded_delete(tmp_path):
+    file = tmp_path / "unsafe.py"
+
+    file.write_text(
+        "def delete_user(current_user_id, target_user_id):\n"
+        "    if target_user_id in users:\n"
+        "        del users[target_user_id]\n",
+        encoding="utf-8"
+    )
+
+    issues = analyzer._scan_missing_auth(
+        ["unsafe.py"],
+        str(tmp_path)
+    )
+
+    assert len(issues) == 1
+    assert issues[0].rule_id == "SEC-AUTH001"
+    assert issues[0].line == 3
+
+
+def test_missing_auth_safe_code(tmp_path):
+    file = tmp_path / "safe.py"
+
+    file.write_text(
+        "def delete_user(current_user_id, target_user_id):\n"
+        "    if current_user_id == target_user_id:\n"
+        "        del users[target_user_id]\n",
+        encoding="utf-8"
+    )
+
+    issues = analyzer._scan_missing_auth(
+        ["safe.py"],
+        str(tmp_path)
+    )
+
+    assert len(issues) == 0
+
+
+
+def test_missing_auth_integrated():
+    diff = """diff --git a/src/user.py b/src/user.py
+--- /dev/null
++++ b/src/user.py
+@@ -0,0 +1,3 @@
++def delete_user(current_user_id, target_user_id):
++    if target_user_id in users:
++        del users[target_user_id]
+"""
+
+    with (
+        patch.object(analyzer, "_run_bandit", return_value=[]),
+        patch.object(analyzer, "_run_semgrep", return_value=[]),
+    ):
+        issues, summary, _ = analyze(
+            diff,
+            "security_scan"
+        )
+
+    assert any(
+        issue.rule_id == "SEC-AUTH001"
+        for issue in issues
+    )
+    assert summary.major >= 1
+
+def test_compare_missing_auth_scanners(tmp_path):
+    file = tmp_path / "sample.py"
+
+    file.write_text(
+        "def delete_user(current_user_id, target_user_id):\n"
+        "    if target_user_id in users:\n"
+        "        del users[target_user_id]\n",
+        encoding="utf-8"
+    )
+
+    paths = ["sample.py"]
+    cwd = str(tmp_path)
+
+    bandit_issues = analyzer._run_bandit(paths, cwd)
+    semgrep_issues = analyzer._run_semgrep(paths, cwd)
+    custom_issues = analyzer._scan_missing_auth(paths, cwd)
+
+    print(
+        "Bandit:",
+        [issue.rule_id for issue in bandit_issues]
+    )
+
+    print(
+        "Semgrep:",
+        [issue.rule_id for issue in semgrep_issues]
+    )
+
+    print(
+        "직접 만든 스캐너:",
+        [issue.rule_id for issue in custom_issues]
+    )
+
+    assert len(custom_issues) == 1
+    assert custom_issues[0].rule_id == "SEC-AUTH001"
+
+def test_hardcoded_secret_detects_candidate(tmp_path):
+    file = tmp_path / "config.py"
+
+    file.write_text(
+        'API_KEY = "sk-example-not-a-real-key"',
+        encoding="utf-8"
+    )
+
+    issues = analyzer._scan_hardcoded_secret(
+        ["config.py"],
+        str(tmp_path)
+    )
+
+    assert len(issues) == 1
+    assert issues[0].rule_id == "SEC-SECRET001"
+    assert issues[0].line == 1
+
+def test_hardcoded_secret_safe_code(tmp_path):
+    file = tmp_path / "config.py"
+
+    file.write_text(
+        'import os\n'
+        'API_KEY = os.getenv("API_KEY")\n',
+        encoding="utf-8"
+    )
+
+    issues = analyzer._scan_hardcoded_secret(
+        ["config.py"],
+        str(tmp_path)
+    )
+
+    assert len(issues) == 0
+
+
+
+def test_hardcoded_secret_integrated():
+    diff = """diff --git a/src/config.py b/src/config.py
+--- /dev/null
++++ b/src/config.py
+@@ -0,0 +1 @@
++API_KEY = "example-secret"
+"""
+
+    with (
+        patch.object(analyzer, "_run_bandit", return_value=[]),
+        patch.object(analyzer, "_run_semgrep", return_value=[]),
+    ):
+        issues, summary, _ = analyze(
+            diff,
+            "security_scan"
+        )
+
+    assert any(
+        issue.rule_id == "SEC-SECRET001"
+        for issue in issues
+    )
+
+    assert summary.major >= 1

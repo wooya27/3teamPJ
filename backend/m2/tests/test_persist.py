@@ -56,7 +56,7 @@ def test_issue_params_maps_severity_and_keyword():
     assert p["github_id"] == "alice"
     assert p["agent"] == "security_scan"
     assert p["programming_language"] == "python"
-    assert p["sub_category"] == "SEC-B608"
+    assert p["sub_category"] == "SQL injection"
     assert p["id"]  # uuid 생성됨
 
 
