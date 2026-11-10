@@ -21,6 +21,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import ast
 from pathlib import Path
 from typing import Literal
 
@@ -280,6 +281,182 @@ def _group_by_lang(paths: list[str]) -> dict[str, list[str]]:
         groups.setdefault(lang, []).append(p)
     return groups
 
+
+def _scan_path_traversal(
+    paths: list[str],
+    cwd: str
+) -> list[IssueItem]:
+
+    issues = []
+
+    for path in paths:
+        file_path = Path(cwd) / path
+
+        try:
+            content = file_path.read_text(encoding="utf-8")
+            tree = ast.parse(content)
+
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+
+        for node in ast.walk(tree):
+
+            if not isinstance(node, ast.BinOp):
+                continue
+
+            if not isinstance(node.op, ast.Div):
+                continue
+
+            if not isinstance(node.left, ast.Name):
+                continue
+
+            if node.left.id not in {"BASE_DIR", "BACKUP_DIR"}:
+                continue
+
+            if not isinstance(node.right, ast.Name):
+                continue
+
+            issues.append(
+                IssueItem(
+                    severity="Major",
+                    line=node.lineno,
+                    file=path,
+                    message="경로 검증이 필요한 코드 발견",
+                    rule_id="SEC-PT001",
+                    suggestion="사용자 입력 경로의 안전성을 확인하세요."
+                )
+            )
+
+    return issues
+
+
+def _scan_missing_auth(
+    paths: list[str],
+    cwd: str
+) -> list[IssueItem]:
+
+    issues = []
+
+    for path in paths:
+        file_path = Path(cwd) / path
+
+        try:
+            content = file_path.read_text(encoding="utf-8")
+            tree = ast.parse(content)
+
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+
+        for node in ast.walk(tree):
+                if not isinstance(node, ast.FunctionDef):
+                    continue
+
+                guarded_lines = set()
+
+                for child in ast.walk(node):
+                    if isinstance(child, ast.If):
+                        condition = ast.unparse(child.test)
+
+                        if condition in (
+                            "current_user_id == target_user_id",
+                            "target_user_id == current_user_id"
+                        ):
+                            for statement in child.body:
+                                for part in ast.walk(statement):
+                                    if isinstance(part, ast.Delete):
+                                        guarded_lines.add(part.lineno)
+
+                for child in ast.walk(node):
+                        if not isinstance(child, ast.Delete):
+                            continue
+
+                        is_user_delete = False
+
+                        for target in child.targets:
+                            if (
+                                isinstance(target, ast.Subscript)
+                                and isinstance(target.value, ast.Name)
+                                and target.value.id == "users"
+                            ):
+                                is_user_delete = True
+
+                        if not is_user_delete:
+                            continue
+
+                        if child.lineno not in guarded_lines:
+                            issues.append(
+                                IssueItem(
+                                    severity="Major",
+                                    line=child.lineno,
+                                    file=path,
+                                    message="인가 누락이 의심되는 삭제 작업",
+                                    rule_id="SEC-AUTH001",
+                                    suggestion="삭제 전에 사용자 권한을 확인하세요."
+                                )
+                            )
+                            
+
+    return issues
+
+def _scan_hardcoded_secret(
+    paths: list[str],
+    cwd: str
+) -> list[IssueItem]:
+
+    issues = []
+
+    secret_names = {
+        "API_KEY",
+        "PASSWORD",
+        "TOKEN"
+    }
+
+    for path in paths:
+        file_path = Path(cwd) / path
+
+        try:
+            content = file_path.read_text(encoding="utf-8")
+            tree = ast.parse(content)
+
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assign):
+                continue
+
+            for target in node.targets:
+                if not isinstance(target, ast.Name):
+                    continue
+
+                name = target.id.upper()
+
+                if not (
+                    name in secret_names
+                    or any(
+                        name.endswith("_" + keyword)
+                        for keyword in secret_names
+                    )
+                ):
+                    continue
+
+                if (
+                    isinstance(node.value, ast.Constant)
+                    and isinstance(node.value.value, str)
+                    and node.value.value
+                ):
+                    issues.append(
+                        IssueItem(
+                            severity="Major",
+                            line=node.lineno,
+                            file=path,
+                            message="하드코딩된 비밀정보 의심",
+                            rule_id="SEC-SECRET001",
+                            suggestion="비밀정보를 환경변수 등으로 관리하세요."
+                        )
+                    )
+
+    return issues
 
 # ── 도구 실행 ─────────────────────────────────────────────────────────────────
 
@@ -592,12 +769,16 @@ def _run_tools(rel_paths: list[str], cwd: str, agent: Agent) -> list[IssueItem]:
             if lang == "python":
                 issues += _run_pylint(paths, cwd)
                 issues += _run_radon(paths, cwd)
+                issues += _scan_path_traversal(paths, cwd)
             elif lang in ("javascript", "typescript"):
                 issues += _run_eslint(paths, cwd)
         else:  # security_scan
             if lang == "python":
                 issues += _run_bandit(paths, cwd)
                 issues += _run_semgrep(paths, cwd)
+                issues += _scan_path_traversal(paths, cwd)
+                issues += _scan_missing_auth(paths, cwd)
+                issues += _scan_hardcoded_secret(paths, cwd)
             else:
                 issues += _run_semgrep(paths, cwd)
     return issues
@@ -613,6 +794,8 @@ def _summarize(issues: list[IssueItem]) -> IssueSummary:
         else:
             summary.minor += 1
     return summary
+
+
 
 
 # ── 공개 진입점 ───────────────────────────────────────────────────────────────
@@ -638,3 +821,6 @@ def analyze(pr_diff: str, agent: Agent) -> tuple[list[IssueItem], IssueSummary, 
         issue.file = _relativize(issue.file or "", tmp)
 
     return issues, _summarize(issues), int((time.monotonic() - start) * 1000)
+
+
+
