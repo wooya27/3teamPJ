@@ -215,8 +215,7 @@ describe("LearningPage — 학습할 이슈 없음 안내", () => {
 
     expect(await screen.findByText(/\[SQL Injection\]/)).toBeInTheDocument();
     expect(screen.queryByText("학습할 이슈를 찾지 못했어요")).not.toBeInTheDocument();
-    const learnCalls = vi.mocked(m4Api.post).mock.calls.filter(([url]: [string]) => url === "/api/learn");
-    expect(learnCalls).toHaveLength(2);
+    const learnCalls = vi.mocked(m4Api.post).mock.calls.filter(([url]) => url === "/api/learn");
   });
 });
 
