@@ -1,0 +1,83 @@
+{
+  "case_id": "m2_custom_mixed_004",
+  "module": "M2",
+  "source": "Task-Link Custom",
+  "expected_issues": [
+    {
+      "id": "SEC-006",
+      "title": "Hardcoded Secrets in Source Code",
+      "severity": "Critical",
+      "issue_type": "security",
+      "line": 5,
+      "file": "vulnerable.py",
+      "message": "AWS_SECRET_KEY is hardcoded in source code, exposing cloud credentials if the repository is leaked or shared.",
+      "rule_id": "SEC-006",
+      "suggestion": "Load secrets from environment variables or a secrets manager.",
+      "resolution_example": "import os\nAWS_SECRET_KEY = os.environ[\"AWS_SECRET_KEY\"]",
+      "similar_issues": [
+        "SEC-003"
+      ]
+    },
+    {
+      "id": "SEC-003",
+      "title": "Path Traversal via unsanitized filename",
+      "severity": "High",
+      "issue_type": "security",
+      "line": 10,
+      "file": "vulnerable.py",
+      "message": "User-supplied filename is joined to BACKUP_DIR without validation, enabling path traversal attacks (e.g. '../../etc/passwd').",
+      "rule_id": "SEC-003",
+      "suggestion": "Resolve the path and verify it starts with BACKUP_DIR before accessing.",
+      "resolution_example": "target = (BACKUP_DIR / filename).resolve()\nif not str(target).startswith(str(BACKUP_DIR.resolve())):\n    raise ValueError('Access denied')",
+      "similar_issues": [
+        "SEC-004"
+      ]
+    },
+    {
+      "id": "SEC-004",
+      "title": "Command Injection via os.system with f-string",
+      "severity": "Critical",
+      "issue_type": "security",
+      "line": 14,
+      "file": "vulnerable.py",
+      "message": "User-supplied 'name' is interpolated directly into a shell command via os.system, enabling command injection (e.g. 'x; rm -rf /').",
+      "rule_id": "SEC-004",
+      "suggestion": "Use subprocess.run with a list of arguments and validate input before use.",
+      "resolution_example": "subprocess.run([\"tar\", \"-czf\", f\"/tmp/{name}.tar.gz\", f\"/var/backups/{name}\"])",
+      "similar_issues": [
+        "SEC-006"
+      ]
+    }
+  ],
+  "ecommerce_custom_issues": [
+    {
+      "rule_id": "ASEC-005",
+      "severity": "Critical",
+      "line": 5,
+      "file": "vulnerable.py",
+      "message": "하드코딩된 시크릿 감지: 하드코딩 시크릿 할당.",
+      "suggestion": "os.environ[...]/시크릿 매니저로 이동하세요. .env 커밋 금지(.gitignore 확인).",
+      "issue_type": "Vulnerability",
+      "concept_id": "SEC-006"
+    },
+    {
+      "rule_id": "ASEC-008",
+      "severity": "Critical",
+      "line": 14,
+      "file": "vulnerable.py",
+      "message": "os.system() 로 셸 명령을 실행하고 있습니다 (명령 인젝션 위험).",
+      "suggestion": "subprocess.run([...], shell=False) 인자 리스트로 호출하고 입력을 검증하세요.",
+      "issue_type": "Vulnerability",
+      "concept_id": "SEC-004"
+    },
+    {
+      "rule_id": "ASA-007",
+      "severity": "Minor",
+      "line": 5,
+      "file": "vulnerable.py",
+      "message": "외부 연동 설정 'AWS_SECRET_KEY'이(가) 리터럴로 고정되어 있습니다.",
+      "suggestion": "os.getenv(\"PG_API_URL\", \"https://mock-pg.local\") 패턴으로 환경변수/시크릿 매니저를 쓰세요.",
+      "issue_type": "Code Smell"
+    }
+  ]
+}

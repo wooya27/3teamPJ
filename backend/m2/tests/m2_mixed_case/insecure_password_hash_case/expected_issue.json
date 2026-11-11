@@ -1,0 +1,20 @@
+{
+  "case_id": "m2_custom_insecure_password_hash_001",
+  "module": "M2",
+  "source": "Task-Link Custom",
+  "expected_issues": [
+    {
+      "id": "SEC-005",
+      "title": "Insecure Password Hashing (MD5)",
+      "severity": "High",
+      "issue_type": "security",
+      "line": 5,
+      "file": "vulnerable.py",
+      "message": "MD5 is a cryptographically broken algorithm unsuitable for password hashing. It is vulnerable to brute-force and rainbow table attacks.",
+      "rule_id": "SEC-005",
+      "suggestion": "Use bcrypt, argon2, or scrypt for password hashing.",
+      "resolution_example": "import bcrypt\nsalt = bcrypt.gensalt()\nhashed = bcrypt.hashpw(password.encode(), salt)",
+      "similar_issues": ["SEC-006"]
+    }
+  ]
+}

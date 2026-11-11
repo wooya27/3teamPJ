@@ -1,0 +1,20 @@
+{
+  "case_id": "m2_custom_auth_missing_001",
+  "module": "M2",
+  "source": "Task-Link Custom",
+  "expected_issues": [
+    {
+      "id": "AUTH-001",
+      "title": "Missing Authorization Check",
+      "severity": "High",
+      "issue_type": "security",
+      "line": 13,
+      "file": "vulnerable.py",
+      "message": "delete_user_account does not verify whether the current user has permission to delete the target account, allowing any authenticated user to delete any account.",
+      "rule_id": "AUTH-001",
+      "suggestion": "Check that current_user_id matches target_user_id or that the user has admin privileges before deletion.",
+      "resolution_example": "if current_user_id != target_user_id and current_user_id not in self.admins:\n    raise PermissionError('Not authorized')",
+      "similar_issues": ["AUTH-002"]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "case_id": "m2_custom_mixed_002",
+  "module": "M2",
+  "source": "Task-Link Custom",
+  "expected_issues": [
+    {
+      "id": "SEC-003",
+      "title": "Path Traversal via unsanitized filename",
+      "severity": "High",
+      "issue_type": "security",
+      "line": 17,
+      "file": "vulnerable.py",
+      "message": "User-supplied filename is joined to BASE_DIR without validation, enabling path traversal attacks (e.g. '../../etc/passwd').",
+      "rule_id": "SEC-003",
+      "suggestion": "Resolve the path and verify it starts with BASE_DIR before accessing.",
+      "resolution_example": "file_path = (BASE_DIR / filename).resolve()\nif not str(file_path).startswith(str(BASE_DIR.resolve())):\n    raise ValueError('Access denied')",
+      "similar_issues": [
+        "SEC-004"
+      ]
+    },
+    {
+      "id": "SEC-004",
+      "title": "Command Injection via os.system with f-string",
+      "severity": "Critical",
+      "issue_type": "security",
+      "line": 20,
+      "file": "vulnerable.py",
+      "message": "User-supplied 'host' is interpolated directly into a shell command via os.system, enabling command injection (e.g. '127.0.0.1; rm -rf /').",
+      "rule_id": "SEC-004",
+      "suggestion": "Use subprocess.run with a list of arguments and validate input before use.",
+      "resolution_example": "subprocess.run([\"ping\", \"-c\", \"1\", host], capture_output=True)",
+      "similar_issues": [
+        "SEC-003"
+      ]
+    },
+    {
+      "id": "AUTH-001",
+      "title": "Missing Authorization Check",
+      "severity": "High",
+      "issue_type": "security",
+      "line": 25,
+      "file": "vulnerable.py",
+      "message": "delete_user_account does not verify whether the current user has permission to delete the target account, allowing any authenticated user to delete any account.",
+      "rule_id": "AUTH-001",
+      "suggestion": "Check that current_user_id matches target_user_id or that the user has admin privileges before deletion.",
+      "resolution_example": "if current_user_id != target_user_id and current_user_id not in self.admins:\n    raise PermissionError('Not authorized')",
+      "similar_issues": [
+        "AUTH-002"
+      ]
+    }
+  ],
+  "ecommerce_custom_issues": [
+    {
+      "rule_id": "ASEC-007",
+      "severity": "Major",
+      "line": 17,
+      "file": "vulnerable.py",
+      "message": "사용자 입력 기반 파일 경로로 파일을 엽니다 (경로 탐색 위험). 영수증/송장 다운로드 주의.",
+      "suggestion": "(BASE / name).resolve() 후 base 경로로 시작하는지 검증하세요.",
+      "issue_type": "Vulnerability",
+      "concept_id": "SEC-003"
+    },
+    {
+      "rule_id": "ASEC-008",
+      "severity": "Critical",
+      "line": 20,
+      "file": "vulnerable.py",
+      "message": "os.system() 로 셸 명령을 실행하고 있습니다 (명령 인젝션 위험).",
+      "suggestion": "subprocess.run([...], shell=False) 인자 리스트로 호출하고 입력을 검증하세요.",
+      "issue_type": "Vulnerability",
+      "concept_id": "SEC-004"
+    }
+  ]
+}
