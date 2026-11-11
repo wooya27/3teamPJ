@@ -373,10 +373,19 @@ def _scan_missing_auth(
                         is_user_delete = False
 
                         for target in child.targets:
+                            if not isinstance(target, ast.Subscript):
+                                continue
+
+                            container = target.value
+
                             if (
-                                isinstance(target, ast.Subscript)
-                                and isinstance(target.value, ast.Name)
-                                and target.value.id == "users"
+                                isinstance(container, ast.Name)
+                                and container.id == "users"
+                            ) or (
+                                isinstance(container, ast.Attribute)
+                                and isinstance(container.value, ast.Name)
+                                and container.value.id == "self"
+                                and container.attr == "users"
                             ):
                                 is_user_delete = True
 
@@ -769,7 +778,6 @@ def _run_tools(rel_paths: list[str], cwd: str, agent: Agent) -> list[IssueItem]:
             if lang == "python":
                 issues += _run_pylint(paths, cwd)
                 issues += _run_radon(paths, cwd)
-                issues += _scan_path_traversal(paths, cwd)
             elif lang in ("javascript", "typescript"):
                 issues += _run_eslint(paths, cwd)
         else:  # security_scan
