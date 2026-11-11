@@ -27,7 +27,7 @@ analysis = [
     "pylint>=3.2.0",
     "radon>=6.0.0",
     "bandit>=1.7.9",
-    "semgrep>=1.79.0; platform_system != 'Windows'",
+    "semgrep>=1.166.0",
 ]
 # LLM-judge 실제 호출용 — USE_MOCK_LLM=false(통합/데모) 시에만 필요.
 # 미설치여도 mock no-op 경로는 동작(llm_judge가 lazy import).
