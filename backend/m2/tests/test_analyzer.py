@@ -66,7 +66,15 @@ def test_security_maps_bandit_output_and_summary():
         }
     )
 
-    def fake_run(cmd, cwd, capture_output, text, timeout):
+    def fake_run(
+    cmd,
+    cwd,
+    capture_output,
+    text,
+    timeout,
+    encoding=None,
+    errors=None
+):
         if "bandit" in cmd:
             return _fake_proc(bandit_json)
         return _fake_proc("")  # semgrep 등 → 빈 출력
@@ -116,7 +124,15 @@ def test_static_maps_pylint_output():
         ]
     )
 
-    def fake_run(cmd, cwd, capture_output, text, timeout):
+    def fake_run(
+    cmd,
+    cwd,
+    capture_output,
+    text,
+    timeout,
+    encoding=None,
+    errors=None
+):
         if "pylint" in cmd:
             return _fake_proc(pylint_json)
         return _fake_proc("")  # radon → 빈 출력

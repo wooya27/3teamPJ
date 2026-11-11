@@ -415,9 +415,10 @@ def _scan_hardcoded_secret(
     issues = []
 
     secret_names = {
-        "API_KEY",
-        "PASSWORD",
-        "TOKEN"
+    "API_KEY",
+    "PASSWORD",
+    "TOKEN",
+    "SECRET_KEY"
     }
 
     for path in paths:
@@ -473,8 +474,14 @@ def _run(cmd: list[str], cwd: str) -> str | None:
     """서브프로세스 실행 → stdout 반환. 도구 부재·타임아웃 시 None(graceful skip)."""
     try:
         proc = subprocess.run(
-            cmd, cwd=cwd, capture_output=True, text=True, timeout=_TOOL_TIMEOUT
-        )
+        cmd,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=_TOOL_TIMEOUT
+    )
     except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
         return None
     return proc.stdout
