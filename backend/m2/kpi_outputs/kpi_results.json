@@ -1,0 +1,334 @@
+{
+  "measured_at_utc": "2026-11-11T14:39:56.791883+00:00",
+  "metrics": {
+    "comparison_unit": "case x vulnerability type (6 cases x 6 types = 36 labels)",
+    "tp": 21,
+    "fn": 0,
+    "fp_provisional": 0,
+    "tn_provisional": 15,
+    "recall_pct": 100.0,
+    "precision_pct_provisional": 100.0,
+    "false_positive_rate_pct_provisional": 0.0,
+    "avg_scan_seconds": 4.513,
+    "min_scan_seconds": 4.241,
+    "max_scan_seconds": 4.602,
+    "unclassified_issue_count": 0
+  },
+  "cases": [
+    {
+      "case": "mixed_case_01",
+      "expected_types": [
+        "MD5",
+        "SECRET",
+        "SQLI"
+      ],
+      "detected_types": [
+        "MD5",
+        "SECRET",
+        "SQLI"
+      ],
+      "matched": [
+        "MD5",
+        "SECRET",
+        "SQLI"
+      ],
+      "missed": [],
+      "unexpected_type_alerts": [],
+      "raw_security_issues": [
+        {
+          "rule_id": "SEC-B324",
+          "line": 17,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "SEC-B608",
+          "line": 18,
+          "type": "SQLI"
+        },
+        {
+          "rule_id": "OWASP-insecure-hash-algorithm-md5",
+          "line": 17,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "OWASP-md5-used-as-password",
+          "line": 17,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "SEC-SECRET001",
+          "line": 5,
+          "type": "SECRET"
+        }
+      ],
+      "unclassified_rule_ids": [],
+      "analysis_ms": 4554
+    },
+    {
+      "case": "mixed_case_02",
+      "expected_types": [
+        "AUTH",
+        "COMMAND",
+        "PATH"
+      ],
+      "detected_types": [
+        "AUTH",
+        "COMMAND",
+        "PATH"
+      ],
+      "matched": [
+        "AUTH",
+        "COMMAND",
+        "PATH"
+      ],
+      "missed": [],
+      "unexpected_type_alerts": [],
+      "raw_security_issues": [
+        {
+          "rule_id": "SEC-B605",
+          "line": 20,
+          "type": "COMMAND"
+        },
+        {
+          "rule_id": "SEC-PT001",
+          "line": 16,
+          "type": "PATH"
+        },
+        {
+          "rule_id": "SEC-AUTH001",
+          "line": 25,
+          "type": "AUTH"
+        }
+      ],
+      "unclassified_rule_ids": [],
+      "analysis_ms": 4602
+    },
+    {
+      "case": "mixed_case_03",
+      "expected_types": [
+        "AUTH",
+        "MD5",
+        "SECRET",
+        "SQLI"
+      ],
+      "detected_types": [
+        "AUTH",
+        "MD5",
+        "SECRET",
+        "SQLI"
+      ],
+      "matched": [
+        "AUTH",
+        "MD5",
+        "SECRET",
+        "SQLI"
+      ],
+      "missed": [],
+      "unexpected_type_alerts": [],
+      "raw_security_issues": [
+        {
+          "rule_id": "SEC-B105",
+          "line": 4,
+          "type": "SECRET"
+        },
+        {
+          "rule_id": "SEC-B608",
+          "line": 24,
+          "type": "SQLI"
+        },
+        {
+          "rule_id": "SEC-B324",
+          "line": 28,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "OWASP-insecure-hash-algorithm-md5",
+          "line": 28,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "OWASP-md5-used-as-password",
+          "line": 28,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "SEC-AUTH001",
+          "line": 33,
+          "type": "AUTH"
+        }
+      ],
+      "unclassified_rule_ids": [],
+      "analysis_ms": 4592
+    },
+    {
+      "case": "mixed_case_04",
+      "expected_types": [
+        "COMMAND",
+        "PATH",
+        "SECRET"
+      ],
+      "detected_types": [
+        "COMMAND",
+        "PATH",
+        "SECRET"
+      ],
+      "matched": [
+        "COMMAND",
+        "PATH",
+        "SECRET"
+      ],
+      "missed": [],
+      "unexpected_type_alerts": [],
+      "raw_security_issues": [
+        {
+          "rule_id": "SEC-B105",
+          "line": 5,
+          "type": "SECRET"
+        },
+        {
+          "rule_id": "SEC-B605",
+          "line": 14,
+          "type": "COMMAND"
+        },
+        {
+          "rule_id": "SEC-PT001",
+          "line": 9,
+          "type": "PATH"
+        },
+        {
+          "rule_id": "SEC-SECRET001",
+          "line": 5,
+          "type": "SECRET"
+        }
+      ],
+      "unclassified_rule_ids": [],
+      "analysis_ms": 4241
+    },
+    {
+      "case": "mixed_case_05",
+      "expected_types": [
+        "COMMAND",
+        "MD5",
+        "SQLI"
+      ],
+      "detected_types": [
+        "COMMAND",
+        "MD5",
+        "SQLI"
+      ],
+      "matched": [
+        "COMMAND",
+        "MD5",
+        "SQLI"
+      ],
+      "missed": [],
+      "unexpected_type_alerts": [],
+      "raw_security_issues": [
+        {
+          "rule_id": "SEC-B324",
+          "line": 14,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "SEC-B608",
+          "line": 15,
+          "type": "SQLI"
+        },
+        {
+          "rule_id": "SEC-B605",
+          "line": 20,
+          "type": "COMMAND"
+        },
+        {
+          "rule_id": "OWASP-insecure-hash-algorithm-md5",
+          "line": 14,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "OWASP-md5-used-as-password",
+          "line": 14,
+          "type": "MD5"
+        }
+      ],
+      "unclassified_rule_ids": [],
+      "analysis_ms": 4577
+    },
+    {
+      "case": "mixed_case_06",
+      "expected_types": [
+        "AUTH",
+        "MD5",
+        "PATH",
+        "SECRET",
+        "SQLI"
+      ],
+      "detected_types": [
+        "AUTH",
+        "MD5",
+        "PATH",
+        "SECRET",
+        "SQLI"
+      ],
+      "matched": [
+        "AUTH",
+        "MD5",
+        "PATH",
+        "SECRET",
+        "SQLI"
+      ],
+      "missed": [],
+      "unexpected_type_alerts": [],
+      "raw_security_issues": [
+        {
+          "rule_id": "SEC-B105",
+          "line": 5,
+          "type": "SECRET"
+        },
+        {
+          "rule_id": "SEC-B608",
+          "line": 25,
+          "type": "SQLI"
+        },
+        {
+          "rule_id": "SEC-B324",
+          "line": 33,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "OWASP-insecure-hash-algorithm-md5",
+          "line": 33,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "OWASP-md5-used-as-password",
+          "line": 33,
+          "type": "MD5"
+        },
+        {
+          "rule_id": "SEC-PT001",
+          "line": 29,
+          "type": "PATH"
+        },
+        {
+          "rule_id": "SEC-AUTH001",
+          "line": 38,
+          "type": "AUTH"
+        },
+        {
+          "rule_id": "SEC-SECRET001",
+          "line": 5,
+          "type": "SECRET"
+        }
+      ],
+      "unclassified_rule_ids": [],
+      "analysis_ms": 4510
+    }
+  ],
+  "warnings": [
+    "정답(expected_issues)은 21개의 유형별 라벨이며, 줄 단위 탐지율을 뜻하지 않습니다.",
+    "추가 경고(FP)는 정답에 없는 유형이라는 의미이며, 실제 오탐인지 사람의 재검토가 필요합니다.",
+    "분류되지 않은 규칙은 정밀도/오탐률 계산에서 제외했습니다.",
+    "분석 시간은 로컬 환경에서 각 케이스를 1회 실행한 시간입니다. 수동 검토시간 절감률이 아닙니다.",
+    "도구가 미설치/타임아웃이면 M2가 해당 도구를 건너뛸 수 있어 환경에 따라 결과가 달라집니다."
+  ]
+}
