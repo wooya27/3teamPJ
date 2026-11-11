@@ -25,6 +25,7 @@ import Settings from "./pages/Settings";
 import KmsPage from "./pages/kms/KmsPage";
 import KmsManagePage from "./pages/kms/KmsManagePage";
 import ReviewPage from "./pages/review/ReviewPage";
+import SecurityPage from "./pages/security/SecurityPage";
 import LearningPage from "./pages/learning/LearningPage";
 import YoutubeRecommendPage from "./pages/youtube/YoutubeRecommendPage";
 import ApprovalsPlaceholder from "./pages/approvals/Placeholder";
@@ -80,6 +81,7 @@ function AppRoutes() {
           <Route path="/kms" element={<KmsPage />} />
           <Route path="/kms/manage" element={<KmsManagePage />} />
           <Route path="/review" element={<ReviewPage />} />
+          <Route path="/security" element={<SecurityPage />} />
           <Route path="/learning" element={<LearningPage />} />
           <Route path="/youtube" element={<YoutubeRecommendPage />} />
           <Route path="/approvals" element={<ApprovalsPlaceholder />} />

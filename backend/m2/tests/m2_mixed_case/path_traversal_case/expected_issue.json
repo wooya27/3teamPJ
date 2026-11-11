@@ -1,0 +1,20 @@
+{
+  "case_id": "m2_custom_path_traversal_001",
+  "module": "M2",
+  "source": "Task-Link Custom",
+  "expected_issues": [
+    {
+      "id": "SEC-003",
+      "title": "Path Traversal via unsanitized filename",
+      "severity": "High",
+      "issue_type": "security",
+      "line": 8,
+      "file": "vulnerable.py",
+      "message": "User-supplied filename is joined to BASE_DIR without validation, enabling path traversal attacks (e.g. '../../etc/passwd').",
+      "rule_id": "SEC-003",
+      "suggestion": "Resolve the path and verify it starts with BASE_DIR before accessing.",
+      "resolution_example": "file_path = (BASE_DIR / filename).resolve()\nif not str(file_path).startswith(str(BASE_DIR.resolve())):\n    raise ValueError('Access denied')",
+      "similar_issues": ["SEC-001"]
+    }
+  ]
+}

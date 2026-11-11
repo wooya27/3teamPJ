@@ -1,0 +1,20 @@
+{
+  "case_id": "m2_custom_hardcoded_secret_001",
+  "module": "M2",
+  "source": "Task-Link Custom",
+  "expected_issues": [
+    {
+      "id": "SEC-006",
+      "title": "Hardcoded Secrets in Source Code",
+      "severity": "Critical",
+      "issue_type": "security",
+      "line": 1,
+      "file": "vulnerable.py",
+      "message": "DATABASE_URL and JWT_SECRET are hardcoded in source code, exposing credentials if the repository is leaked or shared.",
+      "rule_id": "SEC-006",
+      "suggestion": "Load secrets from environment variables or a secrets manager.",
+      "resolution_example": "import os\nDATABASE_URL = os.environ[\"DATABASE_URL\"]\nJWT_SECRET = os.environ[\"JWT_SECRET\"]",
+      "similar_issues": ["SEC-005"]
+    }
+  ]
+}

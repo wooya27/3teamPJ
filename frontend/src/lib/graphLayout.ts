@@ -208,7 +208,7 @@ export function computeHierarchicalLayout(
       const parentPos = positions.get(parent.id)!;
       const children = (childrenOf.get(parent.id) ?? [])
         .map((id) => nodesById.get(id))
-        .filter((n): n is GraphNode => Boolean(n) && !positions.has(n.id));
+       .filter((n): n is GraphNode => n != null && !positions.has(n.id));
       if (children.length === 0) continue;
 
       const childY = (depth + 1 - minDepth) * LAYER_HEIGHT;
