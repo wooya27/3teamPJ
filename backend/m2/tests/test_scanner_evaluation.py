@@ -34,6 +34,19 @@ CASES = [
      "def clear_cache():\n"
      "    del temp_cache['old']", False),
 
+        # AUTH05: self.users 삭제 — 권한 검사 없음
+    ("AUTH05", "_scan_missing_auth",
+     "def delete_user(self, target_user_id):\n"
+     "    del self.users[target_user_id]", True),
+
+    # AUTH06: self.users 삭제 — 권한 검사 있음
+    ("AUTH06", "_scan_missing_auth",
+     "def delete_user(self, current_user_id, target_user_id):\n"
+     "    if current_user_id == target_user_id:\n"
+     "        del self.users[target_user_id]", False),
+
+
+
     # 하드코딩 비밀정보: 4개
     ("SECRET01", "_scan_hardcoded_secret",
      'API_KEY = "fake-demo-key"', True),
@@ -77,3 +90,6 @@ def test_scanner_evaluation(tmp_path):
         )
 
     print(f"\n평가 결과: {correct}/{len(CASES)}")
+
+
+    assert correct == len(CASES), f"탐지 결과 불일치: {correct}/{len(CASES)}"
